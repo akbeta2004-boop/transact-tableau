@@ -83,14 +83,17 @@ function SuccessPage() {
   );
 
   useEffect(() => {
-    if (!shouldPlaySuccessIntro()) return;
+    // Driven by local phase (not the module flag) so a re-run of this effect
+    // can never leave the loader stuck.
+    if (phase === "revealed") return;
     markSuccessIntroPlayed();
-    const t1 = setTimeout(() => setPhase("success"), 1600);
-    const t2 = setTimeout(() => setPhase("revealed"), 3400);
+    const t1 = setTimeout(() => setPhase("success"), 3000);
+    const t2 = setTimeout(() => setPhase("revealed"), 4800);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Record this payment so it shows up in the History tab.
