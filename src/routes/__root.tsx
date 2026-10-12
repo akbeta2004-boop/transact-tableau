@@ -7,11 +7,14 @@ import {
   HeadContent,
   Scripts,
   type ErrorComponentProps,
+  redirect,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { getAccessStatus } from "@/lib/access.functions";
 
 function NotFoundComponent() {
   return (
@@ -74,15 +77,27 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  beforeLoad: async ({ location }) => {
+    if (location.pathname === "/unlock" || location.pathname === "/zimadmin") return;
+
+    try {
+      const access = await getAccessStatus();
+      if (access.granted) return;
+    } catch {
+      // Fail closed: protected pages never render when the access check is unavailable.
+    }
+
+    throw redirect({ to: "/unlock", replace: true });
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Simple Pay" },
+      { name: "description", content: "A simple payment experience." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Simple Pay" },
+      { property: "og:description", content: "A simple payment experience." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
@@ -122,6 +137,23 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      {/* Global toast host — required for any toast(...) call in the app. */}
+      <Toaster
+        position="bottom-center"
+        offset={{ bottom: "92px" }}
+        mobileOffset={{ bottom: "92px", left: "0px", right: "0px" }}
+        toastOptions={{
+          style: {
+            background: "rgba(255,255,255,0.78)",
+            color: "#141414",
+            border: "1px solid rgba(255,255,255,0.45)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            fontWeight: 600,
+            letterSpacing: "0.06em",
+          },
+        }}
+      />
     </QueryClientProvider>
   );
 }
