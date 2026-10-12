@@ -8,3 +8,7 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Load Lottie playback dynamically inside a client effect and destroy it on unmount so browser-only animation code stays outside SSR execution.
+- Gate app routes through the root router and verify encrypted access sessions against server-owned key claims so direct URLs cannot bypass the entry screen.
+- Keep key generation in authenticated TanStack server functions, using a separate encrypted admin session and storing only SHA-256 key hashes.
